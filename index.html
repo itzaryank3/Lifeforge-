@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d18">
+<title>LifeForge RPG</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090d18;color:#eef2ff;font-family:Arial,sans-serif;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:bold;color:#8da8ff}
+.tag{color:#91a0bd;font-size:12px}
+.card{background:#141d30;border:1px solid #263653;border-radius:17px;padding:18px;margin:16px 0}
+h2{font-size:17px;margin:0 0 14px}
+.level{font-size:30px;font-weight:bold;margin:8px 0}
+.muted{color:#91a0bd;font-size:13px}
+.bar{height:10px;background:#29344b;border-radius:20px;overflow:hidden;margin:12px 0}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#637eff,#45d9ce);transition:.3s}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#1b2840;padding:14px;border-radius:13px}
+.stat strong{display:block;font-size:23px;margin-top:7px}
+.mission{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #29344b}
+.mission:last-child{border:0}
+.mission input{width:20px;height:20px;accent-color:#7c91ff}
+.mission span{flex:1;font-size:14px}
+.xp{color:#70dfd1;font-size:12px}
+button{background:#7189ff;color:white;border:0;padding:12px 17px;border-radius:10px;font-weight:bold}
+footer{text-align:center;color:#667590;font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<div>
+<div class="logo">LIFEFORGE</div>
+<div class="tag">YOUR JOURNEY. YOUR PROGRESS.</div>
+</div>
+<div>⚡ <span id="topXP">0</span> XP</div>
+</header>
+
+<section class="card">
+<div class="muted">CURRENT RANK</div>
+<div class="level" id="rank">Rookie</div>
+<div class="muted">Level <span id="level">1</span></div>
+<div class="bar"><div class="fill" id="progress"></div></div>
+<div class="muted"><span id="xp">0</span> / <span id="needed">100</span> XP to next level</div>
+</section>
+
+<div class="stats">
+<div class="stat"><span class="muted">TOTAL XP</span><strong id="total">0</strong></div>
+<div class="stat"><span class="muted">MISSIONS DONE</span><strong id="done">0</strong></div>
+</div>
+
+<section class="card">
+<h2>⚔️ Daily Missions</h2>
+<div id="missions"></div>
+</section>
+
+<section class="card">
+<h2>🏆 Achievements</h2>
+<p class="muted" id="achievement">Complete your first mission to unlock your first achievement.</p>
+</section>
+
+<footer>Small steps. Consistent progress. Keep forging.</footer>
+
+<script>
+const tasks=[
+["Study one topic",20],
+["Revise what you learned",15],
+["Read for 15 minutes",10],
+["Take a refreshing break",10],
+["Organise tomorrow's tasks",10]
+];
+
+let data=JSON.parse(localStorage.getItem("lifeforge")||'{"xp":0,"done":0,"claimed":[]}');
+
+function save(){
+localStorage.setItem("lifeforge",JSON.stringify(data));
+render();
+}
+
+function complete(i,checked){
+if(checked&&!data.claimed.includes(i)){
+data.claimed.push(i);
+data.xp+=tasks[i][1];
+data.done++;
+save();
+}
+}
+
+function render(){
+let level=Math.floor(data.xp/100)+1;
+let current=data.xp%100;
+let ranks=["Rookie","Apprentice","Explorer","Warrior","Master","Legend"];
+let rank=ranks[Math.min(Math.floor((level-1)/2),ranks.length-1)];
+
+document.getElementById("topXP").textContent=data.xp;
+document.getElementById("total").textContent=data.xp;
+document.getElementById("done").textContent=data.done;
+document.getElementById("xp").textContent=current;
+document.getElementById("level").textContent=level;
+document.getElementById("rank").textContent=rank;
+document.getElementById("needed").textContent=100;
+document.getElementById("progress").style.width=current+"%";
+
+document.getElementById("achievement").textContent=
+data.done>=1?"🏅 First Steps — First mission completed!":"Complete your first mission to unlock your first achievement.";
+
+document.getElementById("missions").innerHTML=tasks.map((t,i)=>`
+<label class="mission">
+<input type="checkbox" ${data.claimed.includes(i)?"checked":""}
+${data.claimed.includes(i)?"disabled":""}
+onchange="complete(${i},this.checked)">
+<span>${t[0]}</span>
+<b class="xp">+${t[1]} XP</b>
+</label>`).join("");
+}
+render();
+</script>
+</body>
+</html>
